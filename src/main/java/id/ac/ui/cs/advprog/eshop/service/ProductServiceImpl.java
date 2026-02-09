@@ -40,4 +40,9 @@ public class ProductServiceImpl implements ProductService {
             }
         }
     }
+
+    @Override
+    public void delete(String productId) {
+        products.removeIf(p -> p.getProductId().equals(productId));
+    }
 }
