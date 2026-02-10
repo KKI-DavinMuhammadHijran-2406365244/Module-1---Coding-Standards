@@ -66,4 +66,37 @@ class ProductRepositoryTest {
         assertEquals(product1.getProductId(), savedProduct1.getProductId());
         assertTrue(productIterator.hasNext());
     }
+
+    @Test
+    void deleteProduct_success() {
+        ProductRepository repo = new ProductRepository();
+
+        Product product = new Product();
+        product.setProductId("1");
+        product.setProductName("Book");
+        product.setProductQuantity(10);
+
+        repo.create(product);
+
+        repo.delete("1");
+
+        assertFalse(repo.findAll().hasNext());
+    }
+
+    @Test
+    void deleteProduct_nonExistingId() {
+        ProductRepository repo = new ProductRepository();
+
+        Product product = new Product();
+        product.setProductId("1");
+        repo.create(product);
+
+        // delete ID that does not exist
+        repo.delete("999");
+
+        // product should still exist
+        assertTrue(repo.findAll().hasNext());
+    }
+
+
 }
