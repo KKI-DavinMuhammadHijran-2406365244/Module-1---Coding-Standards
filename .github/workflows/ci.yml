@@ -24,3 +24,9 @@ jobs:
 
       - name: Run unit tests
         run: ./gradlew test
+
+      - name: Analyze with SonarCloud
+          env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Provided by GitHub
+            SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}    # The secret you created
+          run: ./gradlew sonar
