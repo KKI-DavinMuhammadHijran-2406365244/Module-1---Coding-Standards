@@ -7,6 +7,7 @@ plugins {
 	jacoco
 	id("org.springframework.boot") version "3.5.10"
 	id("io.spring.dependency-management") version "1.1.7"
+	id("org.sonarqube") version "5.1.0.4882"
 }
 
 group = "id.ac.ui.cs.advprog"
@@ -77,4 +78,15 @@ tasks.test {
 tasks.jacocoTestReport {
 	// c. Explicitly tell jacocoTestReport to run after the test task
 	dependsOn(tasks.test)
+}
+
+sonar {
+	properties {
+		property("sonar.projectKey", "KKI-DavinMuhammadHijran-2406365244_Module-1---Coding-Standards") // Your unique Project Key
+		property("sonar.organization", "kki-davinmuhammadhijran-2406365244")      // From Step 1
+		property("sonar.host.url", "https://sonarcloud.io")
+
+		// This links the JaCoCo report you just set up to SonarCloud
+		property("sonar.coverage.jacoco.xmlReportPaths", "build/reports/jacoco/test/jacocoTestReport.xml")
+	}
 }
