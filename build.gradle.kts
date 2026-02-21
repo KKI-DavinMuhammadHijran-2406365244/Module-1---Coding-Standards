@@ -4,6 +4,7 @@ val webdrivermanagerVersion = "5.6.3"
 
 plugins {
 	java
+	jacoco
 	id("org.springframework.boot") version "3.5.10"
 	id("io.spring.dependency-management") version "1.1.7"
 }
@@ -14,7 +15,7 @@ description = "eshop"
 
 java {
 	toolchain {
-		languageVersion = JavaLanguageVersion.of(21)
+		languageVersion.set(JavaLanguageVersion.of(21))
 	}
 }
 
@@ -41,10 +42,10 @@ dependencies {
 	testImplementation("io.github.bonigarcia:selenium-jupiter:$seleniumJupiterVersion")
 }
 
+// Logic for custom test tasks
 tasks.register<Test>("unitTest") {
 	description = "Runs unit tests."
 	group = "verification"
-
 	filter {
 		excludeTestsMatching("*FunctionalTest")
 	}
@@ -53,7 +54,6 @@ tasks.register<Test>("unitTest") {
 tasks.register<Test>("functionalTest") {
 	description = "Runs functional tests."
 	group = "verification"
-
 	filter {
 		includeTestsMatching("*FunctionalTest")
 	}
@@ -61,4 +61,20 @@ tasks.register<Test>("functionalTest") {
 
 tasks.withType<Test>().configureEach {
 	useJUnitPlatform()
+}
+
+// --- NEW CONFIGURATION STARTS HERE ---
+
+// a. Exclude functional tests from the default 'test' task
+tasks.test {
+	filter {
+		excludeTestsMatching("*FunctionalTest")
+	}
+	// b. & c. Ensure jacocoTestReport runs automatically after test
+	finalizedBy(tasks.jacocoTestReport)
+}
+
+tasks.jacocoTestReport {
+	// c. Explicitly tell jacocoTestReport to run after the test task
+	dependsOn(tasks.test)
 }
