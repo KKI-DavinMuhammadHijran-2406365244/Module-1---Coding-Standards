@@ -76,8 +76,12 @@ tasks.test {
 }
 
 tasks.jacocoTestReport {
-	// c. Explicitly tell jacocoTestReport to run after the test task
-	dependsOn(tasks.test)
+	dependsOn(tasks.test) // ensure tests run first
+	reports {
+		xml.required.set(true)   // <-- generate XML
+		html.required.set(true)  // optional, nice for local viewing
+		csv.required.set(false)
+	}
 }
 
 sonar {
