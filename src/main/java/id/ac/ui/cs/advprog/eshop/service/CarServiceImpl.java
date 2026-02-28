@@ -16,16 +16,15 @@ public class CarServiceImpl implements CarService {
 
     @Override
     public Car create(Car car) {
-        carRepository.create(car);
-        return car;
+        return carRepository.create(car);
     }
 
     @Override
     public List<Car> findAll() {
         Iterator<Car> carIterator = carRepository.findAll();
-        List<Car> allCar = new ArrayList<>();
-        carIterator.forEachRemaining(allCar::add);
-        return allCar;
+        List<Car> allCars = new ArrayList<>();
+        carIterator.forEachRemaining(allCars::add);
+        return allCars;
     }
 
     @Override
