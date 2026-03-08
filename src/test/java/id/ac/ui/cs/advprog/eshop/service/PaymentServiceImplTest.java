@@ -1,4 +1,7 @@
 package id.ac.ui.cs.advprog.eshop.service;
+import id.ac.ui.cs.advprog.eshop.model.Product;
+import java.util.List;
+import java.util.ArrayList;
 
 import id.ac.ui.cs.advprog.eshop.enums.PaymentMethod;
 import id.ac.ui.cs.advprog.eshop.enums.PaymentStatus;
@@ -35,8 +38,16 @@ class PaymentServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        sampleOrder = new Order("order-1", null, 1700000000L, "Author A");
+        List<Product> products = new ArrayList<>();
+        Product p = new Product();
+        p.setProductId("prod-1");
+        p.setProductName("Sample Product");
+        p.setProductQuantity(1);
+        products.add(p);
+
+        sampleOrder = new Order("order-1", products, 1700000000L, "Author A");
     }
+
 
     @Test
     void testAddPayment_Voucher_ValidCode_ShouldBeSuccessAndSaved() {
@@ -78,8 +89,6 @@ class PaymentServiceImplTest {
 
         Payment toSave = new Payment("p-b-1", PaymentMethod.BANK_TRANSFER, PaymentStatus.PENDING, data, "order-1");
         when(paymentRepository.save(any(Payment.class))).thenAnswer(invocation -> invocation.getArgument(0));
-        when(orderRepository.findById("order-1")).thenReturn(sampleOrder);
-
         Payment result = paymentService.addPayment(toSave.getOrderId(), PaymentMethod.BANK_TRANSFER.getValue(), data);
 
         assertNotNull(result);

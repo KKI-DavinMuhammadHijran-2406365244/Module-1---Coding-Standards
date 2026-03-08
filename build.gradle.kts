@@ -31,6 +31,8 @@ repositories {
 }
 
 dependencies {
+	testImplementation("org.mockito:mockito-core:4.11.0")
+	testImplementation("org.mockito:mockito-inline:4.11.0")
 	implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
 	implementation("org.springframework.boot:spring-boot-starter-web")
 	compileOnly("org.projectlombok:lombok")
