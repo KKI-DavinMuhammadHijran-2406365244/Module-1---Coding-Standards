@@ -1,6 +1,5 @@
 package id.ac.ui.cs.advprog.eshop.service;
 
-import id.ac.ui.cs.advprog.eshop.enums.OrderStatus;
 import id.ac.ui.cs.advprog.eshop.model.Order;
 import id.ac.ui.cs.advprog.eshop.repository.OrderRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,21 +16,24 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public Order createOrder(Order order) {
-        // If order already exists, return null
-        if (orderRepository.findById(order.getId()) != null) {
-            return null;
+        if (orderRepository.findById(order.getId()) == null) {
+            orderRepository.save(order);
+            return order;
         }
-        return orderRepository.save(order);
+        return null;
     }
 
     @Override
     public Order updateStatus(String orderId, String status) {
-        Order existing = orderRepository.findById(orderId);
-        if (existing == null) {
-            throw new NoSuchElementException("Order not found: " + orderId);
+        Order order = orderRepository.findById(orderId);
+        if (order != null) {
+            Order newOrder = new Order(order.getId(), order.getProducts(),
+                    order.getOrderTime(), order.getAuthor(), status);
+            orderRepository.save(newOrder);
+            return newOrder;
+        } else {
+            throw new NoSuchElementException();
         }
-        existing.setStatus(status); // validation handled in Order.setStatus
-        return orderRepository.save(existing);
     }
 
     @Override
