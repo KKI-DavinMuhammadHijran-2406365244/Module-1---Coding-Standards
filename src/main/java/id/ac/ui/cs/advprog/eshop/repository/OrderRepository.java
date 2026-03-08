@@ -11,19 +11,26 @@ public class OrderRepository {
     private List<Order> orderData = new ArrayList<>();
 
     public Order save(Order order) {
-        // if an order with the same id exists, replace it
-        Order existing = findById(order.getId());
-        if (existing != null) {
-            orderData.remove(existing);
+        int i = 0;
+        for (Order savedOrder : orderData) {
+            if (savedOrder.getId().equals(order.getId())) {
+                orderData.remove(i);
+                orderData.add(i, order);
+                return order;
+            }
+            i++;
         }
         orderData.add(order);
         return order;
     }
 
+    /**
+     * Find an order by its ID. Returns null if not found.
+     */
     public Order findById(String id) {
-        for (Order order : orderData) {
-            if (order.getId().equals(id)) {
-                return order;
+        for (Order savedOrder : orderData) {
+            if (savedOrder.getId().equals(id)) {
+                return savedOrder;
             }
         }
         return null;
@@ -31,9 +38,9 @@ public class OrderRepository {
 
     public List<Order> findAllByAuthor(String author) {
         List<Order> result = new ArrayList<>();
-        for (Order order : orderData) {
-            if (order.getAuthor().equals(author)) {
-                result.add(order);
+        for (Order savedOrder : orderData) {
+            if (savedOrder.getAuthor().equals(author)) {
+                result.add(savedOrder);
             }
         }
         return result;
