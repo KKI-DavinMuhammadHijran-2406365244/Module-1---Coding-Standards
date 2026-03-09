@@ -1,3 +1,11 @@
+# Module 4
+1. Reflection on TDD flow (Percival, 2017):
+ Following the TDD workflow was useful because it forced me to think about the expected behavior of the system before writing the implementation, which kept my focus on correctness and design clarity. However, I noticed that sometimes I rushed into writing tests without fully considering edge cases or alternative scenarios, which limited the coverage of my tests. Next time, I need to spend more time upfront analyzing requirements and brainstorming possible failure modes so that my tests can anticipate more real-world situations and guide the implementation more effectively.
+2. Reflection on F.I.R.S.T. principle:
+ The unit tests I created mostly followed the F.I.R.S.T. principle: they were fast to run, independent of each other, repeatable with consistent results, self-validating through clear assertions, and timely since they were written alongside the code. That said, a few tests could be improved in independence and clarity—for example, avoiding reliance on shared mutable state or making assertions more explicit about expected outcomes. Next time, I will ensure stricter isolation between tests (e.g., resetting data structures fully) and write assertions that communicate intent more clearly, so the tests remain robust and easy to understand.
+
+-------------------------------------------------------------------------------
+    
 # Module 3
 1. - by creating distinct controllers (CarController and ProductController). Each controller now focuses solely on its own domain, managing HTTP requests, preparing models, and returning views specific to that entity. This separation ensures that controllers adhere to the Single Responsibility Principle (SRP), since they only deal with request handling and not business logic. By depending on service interfaces rather than concrete implementations, the controllers also comply with the Dependency Inversion Principle (DIP), making them flexible and open to extension without modification (Open/Closed Principle, OCP).
 
