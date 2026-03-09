@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.UUID;
 
 @Service
 public class OrderServiceImpl implements OrderService {
@@ -16,6 +17,12 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public Order createOrder(Order order) {
+        if (order.getId() == null || order.getId().isEmpty()) {
+            order.setId(UUID.randomUUID().toString());
+        }
+        if (order.getOrderTime() == null) {
+            order.setOrderTime(System.currentTimeMillis());
+        }
         if (orderRepository.findById(order.getId()) == null) {
             orderRepository.save(order);
             return order;

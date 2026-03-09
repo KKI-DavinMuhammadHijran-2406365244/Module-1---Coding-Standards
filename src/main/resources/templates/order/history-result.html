@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head><title>Order History</title></head>
+<body>
+<h1>Orders for author: <span th:text="${author}"></span></h1>
+<ul th:if="${orders != null and !orders.isEmpty()}">
+    <li th:each="order : ${orders}">
+        <span th:text="${order.id}"></span> - <span th:text="${order.status}"></span>
+        <a th:href="@{|/order/pay/${order.id}|}">Pay</a>
+    </li>
+</ul>
+<p th:if="${orders == null or orders.isEmpty()}">No orders found.</p>
+<a th:href="@{/order/history}">Search again</a>
+</body>
+</html>

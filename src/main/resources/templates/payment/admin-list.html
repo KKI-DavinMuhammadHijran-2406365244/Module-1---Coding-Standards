@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head><title>All Payments</title></head>
+<body>
+<h1>All Payments</h1>
+<ul>
+    <li th:each="p : ${payments}">
+        <span th:text="${p.id}"></span> - <span th:text="${p.status}"></span>
+        <a th:href="@{|/payment/admin/detail/${p.id}|}">Detail</a>
+    </li>
+</ul>
+</body>
+</html>

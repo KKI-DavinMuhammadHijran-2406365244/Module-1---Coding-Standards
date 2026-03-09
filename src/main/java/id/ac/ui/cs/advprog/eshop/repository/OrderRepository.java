@@ -11,9 +11,13 @@ public class OrderRepository {
     private List<Order> orderData = new ArrayList<>();
 
     public Order save(Order order) {
+        if (order.getId() == null) {
+            orderData.add(order);
+            return order;
+        }
         int i = 0;
         for (Order savedOrder : orderData) {
-            if (savedOrder.getId().equals(order.getId())) {
+            if (savedOrder.getId() != null && savedOrder.getId().equals(order.getId())) {
                 orderData.remove(i);
                 orderData.add(i, order);
                 return order;
