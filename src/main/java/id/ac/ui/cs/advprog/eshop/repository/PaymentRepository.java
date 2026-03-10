@@ -11,15 +11,7 @@ public class PaymentRepository {
     private final List<Payment> paymentData = new ArrayList<>();
 
     public Payment save(Payment payment) {
-        int i = 0;
-        for (Payment p : paymentData) {
-            if (p.getId().equals(payment.getId())) {
-                paymentData.remove(i);
-                paymentData.add(i, payment);
-                return payment;
-            }
-            i++;
-        }
+        paymentData.removeIf(p -> p.getId().equals(payment.getId()));
         paymentData.add(payment);
         return payment;
     }

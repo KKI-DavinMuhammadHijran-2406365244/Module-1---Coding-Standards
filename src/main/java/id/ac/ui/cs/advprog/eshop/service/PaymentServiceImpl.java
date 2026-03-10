@@ -26,44 +26,13 @@ public class PaymentServiceImpl implements PaymentService {
     @Override
     public Payment addPayment(String orderId, String method, Map<String, String> paymentData) {
         PaymentMethod paymentMethod = parseMethod(method);
-        PaymentStatus status = PaymentStatus.PENDING;
-
-        if (paymentMethod == PaymentMethod.VOUCHER) {
-            String voucher = paymentData == null ? null : paymentData.get("voucherCode");
-            if (isValidVoucher(voucher)) {
-                status = PaymentStatus.SUCCESS;
-            } else {
-                status = PaymentStatus.REJECTED;
-            }
-        } else if (paymentMethod == PaymentMethod.BANK_TRANSFER) {
-            String bankName = paymentData == null ? null : paymentData.get("bankName");
-            String referenceCode = paymentData == null ? null : paymentData.get("referenceCode");
-            if (isEmpty(bankName) || isEmpty(referenceCode)) {
-                status = PaymentStatus.REJECTED;
-            } else {
-                status = PaymentStatus.PENDING;
-            }
-        } else if (paymentMethod == PaymentMethod.CASH_ON_DELIVERY) {
-            status = PaymentStatus.PENDING;
-        }
+        PaymentStatus status = determinePaymentStatus(paymentMethod, paymentData);
 
         String paymentId = UUID.randomUUID().toString();
         Payment payment = new Payment(paymentId, paymentMethod, status, paymentData, orderId);
         Payment saved = paymentRepository.save(payment);
 
-        if (saved.getStatus() == PaymentStatus.SUCCESS) {
-            Order order = orderRepository.findById(orderId);
-            if (order != null) {
-                order.setStatus(OrderStatus.SUCCESS.getValue());
-                orderRepository.save(order);
-            }
-        } else if (saved.getStatus() == PaymentStatus.REJECTED) {
-            Order order = orderRepository.findById(orderId);
-            if (order != null) {
-                order.setStatus(OrderStatus.FAILED.getValue());
-                orderRepository.save(order);
-            }
-        }
+        updateOrderByPaymentStatus(orderId, saved.getStatus());
 
         return saved;
     }
@@ -78,18 +47,38 @@ public class PaymentServiceImpl implements PaymentService {
         payment.setStatus(newStatus);
         Payment saved = paymentRepository.save(payment);
 
-        Order order = orderRepository.findById(payment.getOrderId());
-        if (order != null) {
-            if (newStatus == PaymentStatus.SUCCESS) {
-                order.setStatus(OrderStatus.SUCCESS.getValue());
-                orderRepository.save(order);
-            } else if (newStatus == PaymentStatus.REJECTED) {
-                order.setStatus(OrderStatus.FAILED.getValue());
-                orderRepository.save(order);
-            }
-        }
+        updateOrderByPaymentStatus(payment.getOrderId(), newStatus);
 
         return saved;
+    }
+
+    private PaymentStatus determinePaymentStatus(PaymentMethod paymentMethod, Map<String, String> paymentData) {
+        if (paymentMethod == PaymentMethod.VOUCHER) {
+            String voucher = paymentData == null ? null : paymentData.get("voucherCode");
+            return isValidVoucher(voucher) ? PaymentStatus.SUCCESS : PaymentStatus.REJECTED;
+        }
+        if (paymentMethod == PaymentMethod.BANK_TRANSFER) {
+            String bankName = paymentData == null ? null : paymentData.get("bankName");
+            String referenceCode = paymentData == null ? null : paymentData.get("referenceCode");
+            return (isEmpty(bankName) || isEmpty(referenceCode)) ? PaymentStatus.REJECTED : PaymentStatus.PENDING;
+        }
+        return PaymentStatus.PENDING;
+    }
+
+    private void updateOrderByPaymentStatus(String orderId, PaymentStatus paymentStatus) {
+        if (paymentStatus == PaymentStatus.PENDING) {
+            return;
+        }
+        Order order = orderRepository.findById(orderId);
+        if (order == null) {
+            return;
+        }
+        if (paymentStatus == PaymentStatus.SUCCESS) {
+            order.setStatus(OrderStatus.SUCCESS.getValue());
+        } else if (paymentStatus == PaymentStatus.REJECTED) {
+            order.setStatus(OrderStatus.FAILED.getValue());
+        }
+        orderRepository.save(order);
     }
 
     @Override

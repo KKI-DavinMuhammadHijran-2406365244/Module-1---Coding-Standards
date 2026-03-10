@@ -1,3 +1,53 @@
+# Module 1 — Bonus 2: Peer Code Review & Refactoring Reflection
+
+### 1. What do you think about your partner's code? Are there any aspects that are still lacking?
+
+Overall, my partner's code is well-structured and follows a reasonable layered architecture (controller → service → repository → model). The separation between `PaymentService`, `OrderService`, and their implementations shows awareness of the Single Responsibility Principle. Test coverage for the service and repository layers is present, which is a good sign.
+
+That said, there are a few aspects that were still lacking:
+- **Duplicated logic**: The block that updates an `Order`'s status based on a `PaymentStatus` result was copy-pasted verbatim inside both `addPayment()` and `setStatus()` in `PaymentServiceImpl`. This is the most significant maintainability concern — if the order-update logic ever needs to change, a developer must remember to update two separate places.
+- **Long method with unclear intent**: `addPayment()` was responsible for parsing the method, deciding the payment status via a long if-else-if chain, creating the payment, and updating the order — four different concerns in one method, making it hard to read and test in isolation.
+- **Unnecessary object construction**: In `OrderServiceImpl.updateStatus()`, a brand-new `Order` object was constructed from the old one's fields just to change its status, even though the existing object already had a `setStatus()` method available. This creates needless object churn and is harder to follow.
+- **Manual boilerplate in `Payment.java`**: The model class had 40+ lines of hand-written getters, setters, and a no-args constructor, all of which are maintenance overhead given that the project already uses Lombok in other models.
+- **Error-prone list mutation in `PaymentRepository.save()`**: The manual index counter (`int i`) combined with `remove(i)` and `add(i, payment)` inside a for-each loop is a common source of `ConcurrentModificationException` bugs and is unnecessarily complex for a simple upsert.
+
+### 2. What did you do to contribute to your partner's code?
+
+I reviewed the pull request from the `order` branch to `main`, identified the code smells listed below, and created the branch `refactor/2406453606` based on the `order` branch. In that branch I:
+- Extracted two new private helper methods in `PaymentServiceImpl` to eliminate duplicated code and the long method.
+- Simplified `OrderServiceImpl.updateStatus()` to reuse the existing object instead of constructing a new one.
+- Replaced manual getter/setter/no-args constructor boilerplate in `Payment.java` with Lombok annotations.
+- Replaced the fragile index-loop in `PaymentRepository.save()` with `removeIf()`.
+
+All tests passed (`BUILD SUCCESSFUL`) after every change, confirming that no existing behaviour was broken.
+
+### 3. What code smells did you find in your partner's code?
+
+| # | Code Smell | Location |
+|---|-----------|----------|
+| 1 | **Duplicated Code** — identical order-status update block in two methods | `PaymentServiceImpl.addPayment()` and `setStatus()` |
+| 2 | **Long Method / Switch-Statement smell** — large if-else chain deciding `PaymentStatus` mixed into `addPayment()` | `PaymentServiceImpl.addPayment()` |
+| 3 | **Unnecessary Object Creation (Temporary Variable smell)** — new `Order(...)` built just to change a single field | `OrderServiceImpl.updateStatus()` |
+| 4 | **Bloated Code / Excessive Boilerplate** — hand-written getters, setters, no-args constructor | `Payment.java` |
+| 5 | **Complex / Error-prone Method** — manual index counter loop for list upsert, risk of `ConcurrentModificationException` | `PaymentRepository.save()` |
+
+### 4. What refactoring steps did you suggest and execute?
+
+**Smell 1 & 2 — `PaymentServiceImpl` (Duplicated Code + Long Method)**
+- Extracted `determinePaymentStatus(PaymentMethod, Map<String, String>)` — encapsulates the if-else chain for deciding the status based on payment method. `addPayment()` now delegates to this single method.
+- Extracted `updateOrderByPaymentStatus(String orderId, PaymentStatus)` — contains the single shared implementation of "look up the order and update its status". Both `addPayment()` and `setStatus()` now call this instead of duplicating the logic.
+
+**Smell 3 — `OrderServiceImpl.updateStatus()` (Unnecessary Object Creation)**
+- Removed the `new Order(...)` construction. The method now calls `order.setStatus(status)` directly on the retrieved object and saves it, which is simpler, produces no garbage, and is immediately readable.
+
+**Smell 4 — `Payment.java` (Bloated Boilerplate)**
+- Added `@Getter`, `@Setter`, and `@NoArgsConstructor` from Lombok, and deleted the 40+ lines of equivalent hand-written code. The all-args constructor is retained as it carries meaningful construction semantics.
+
+**Smell 5 — `PaymentRepository.save()` (Complex Method)**
+- Replaced the manual index-counter for-loop with `paymentData.removeIf(p -> p.getId().equals(payment.getId()))` followed by `paymentData.add(payment)`. This is safe, readable, and avoids the risk of a `ConcurrentModificationException`.
+
+---
+
 # Module 3
 1. - by creating distinct controllers (CarController and ProductController). Each controller now focuses solely on its own domain, managing HTTP requests, preparing models, and returning views specific to that entity. This separation ensures that controllers adhere to the Single Responsibility Principle (SRP), since they only deal with request handling and not business logic. By depending on service interfaces rather than concrete implementations, the controllers also comply with the Dependency Inversion Principle (DIP), making them flexible and open to extension without modification (Open/Closed Principle, OCP).
 
